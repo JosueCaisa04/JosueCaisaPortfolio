@@ -669,13 +669,13 @@ export default function App() {
   };
 
   useEffect(() => {
-    // Collect all image URLs from portfolioData
+    // 1. Collect all unique image URLs from portfolioData
     const urls: string[] = [];
 
     // About photos
     if (portfolioData.about && portfolioData.about.photos) {
       portfolioData.about.photos.forEach(p => {
-        if (p.url) urls.push(p.url);
+        if (p.url) urls.push(resolveAssetUrl(p.url));
       });
     }
 
@@ -683,74 +683,104 @@ export default function App() {
     if (portfolioData.projects) {
       portfolioData.projects.forEach(p => {
         if (p.mediaType === "image" && p.mediaUrl) {
-          urls.push(p.mediaUrl);
+          urls.push(resolveAssetUrl(p.mediaUrl));
         }
         if (p.gallery) {
           p.gallery.forEach(imgUrl => {
-            if (imgUrl) urls.push(imgUrl);
+            if (imgUrl) urls.push(resolveAssetUrl(imgUrl));
           });
+        }
+      });
+    }
+
+    // YouTube reel covers
+    if (portfolioData.reels) {
+      portfolioData.reels.forEach(r => {
+        const ytId = getYouTubeId(r.videoUrl);
+        if (ytId) {
+          urls.push(`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`);
         }
       });
     }
 
     // Filter unique valid urls
     const uniqueUrls = Array.from(new Set(urls.filter(Boolean)));
-    const totalImages = uniqueUrls.length;
+    const totalCacheImages = uniqueUrls.length;
 
-    let loadedCount = 0;
-    let windowLoaded = false;
+    let cachedCount = 0;
+    let cacheFinished = false;
 
-    const checkComplete = () => {
-      const imgPercent = totalImages > 0 ? (loadedCount / totalImages) * 100 : 100;
-      const windowPercent = windowLoaded ? 100 : 0;
-      
-      // Calculate overall progress: 70% weight to images, 30% to window load/document status
-      const overall = Math.round(imgPercent * 0.7 + windowPercent * 0.3);
-      setLoadingProgress(overall);
-
-      if (loadedCount >= totalImages && (windowLoaded || document.readyState === "complete")) {
-        setLoadingProgress(100);
-        const timer = setTimeout(() => {
-          setIsLoadingScreen(false);
-        }, 400);
-        return () => clearTimeout(timer);
-      }
-    };
-
-    // Listen to window load event
-    const handleWindowLoad = () => {
-      windowLoaded = true;
-      checkComplete();
-    };
-
-    if (document.readyState === "complete") {
-      windowLoaded = true;
-    } else {
-      window.addEventListener("load", handleWindowLoad);
-    }
-
-    // Safety fallback: after 6 seconds, hide loader anyway so user experience is never blocked
+    // Safety fallback: after 10 seconds, hide loader anyway to protect user experience
     const safetyTimeout = setTimeout(() => {
       setLoadingProgress(100);
       setIsLoadingScreen(false);
-    }, 6000);
+    }, 10000);
 
-    if (totalImages === 0) {
+    const checkComplete = () => {
+      // Step 1: Preload via Javascript Image cache
+      const cachePercent = totalCacheImages > 0 ? (cachedCount / totalCacheImages) * 100 : 100;
+      setLoadingProgress(Math.round(cachePercent));
+
+      if (cachedCount >= totalCacheImages && !cacheFinished) {
+        cacheFinished = true;
+        
+        // Step 2: Now double check that ALL current DOM <img> tags are fully complete & loaded
+        const checkDomImages = () => {
+          const domImages = Array.from(document.querySelectorAll("img"));
+          const uncompletedImages = domImages.filter(img => !img.complete);
+
+          if (uncompletedImages.length === 0) {
+            setLoadingProgress(100);
+            const fadeTimer = setTimeout(() => {
+              setIsLoadingScreen(false);
+            }, 500);
+            return () => clearTimeout(fadeTimer);
+          } else {
+            // If any DOM image is not completed yet, wait for them
+            let resolvedDomCount = 0;
+            const totalToResolve = uncompletedImages.length;
+
+            uncompletedImages.forEach(img => {
+              const onImgLoaded = () => {
+                resolvedDomCount++;
+                if (resolvedDomCount >= totalToResolve) {
+                  setLoadingProgress(100);
+                  setTimeout(() => setIsLoadingScreen(false), 500);
+                }
+              };
+              img.addEventListener("load", onImgLoaded, { once: true });
+              img.addEventListener("error", onImgLoaded, { once: true });
+              
+              // Double check in case it completed right after filter
+              if (img.complete) {
+                onImgLoaded();
+              }
+            });
+          }
+        };
+
+        // Give a tiny frame for React to mount elements, then check DOM images
+        setTimeout(checkDomImages, 50);
+      }
+    };
+
+    if (totalCacheImages === 0) {
+      cachedCount = 0;
       checkComplete();
     } else {
       uniqueUrls.forEach(url => {
         const img = new Image();
         img.src = url;
         if (img.complete) {
-          loadedCount++;
+          cachedCount++;
           checkComplete();
         } else {
           img.onload = () => {
-            loadedCount++;
+            cachedCount++;
             checkComplete();
           };
           img.onerror = () => {
-            loadedCount++; // Count as loaded even on error so we don't block progress
+            cachedCount++; // still count it to prevent loading freeze
             checkComplete();
           };
         }
@@ -758,7 +788,6 @@ export default function App() {
     }
 
     return () => {
-      window.removeEventListener("load", handleWindowLoad);
       clearTimeout(safetyTimeout);
     };
   }, []);
@@ -1634,8 +1663,8 @@ export default function App() {
                       <img 
                         src={resolveAssetUrl(project.mediaUrl)} 
                         alt={project.title}
-                        loading="lazy"
-                        decoding="async"
+                        loading="eager"
+                        decoding="sync"
                         referrerPolicy="no-referrer"
                         className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 select-none group-hover:scale-105 ${
                           hasVideo && isHovered ? "opacity-0" : "opacity-100"
@@ -2201,8 +2230,8 @@ export default function App() {
                               <img
                                 src={resolveAssetUrl(selectedProject.gallery[activeSlideIndex])}
                                 alt={`${selectedProject.title} - Slide ${activeSlideIndex + 1}`}
-                                loading="lazy"
-                                decoding="async"
+                                loading="eager"
+                                decoding="sync"
                                 referrerPolicy="no-referrer"
                                 className="max-w-full max-h-full object-contain select-none transition-all duration-300"
                               />
@@ -2258,8 +2287,8 @@ export default function App() {
                             <img
                               src={resolveAssetUrl(selectedProject.mediaUrl)}
                               alt={selectedProject.title}
-                              loading="lazy"
-                              decoding="async"
+                              loading="eager"
+                              decoding="sync"
                               referrerPolicy="no-referrer"
                               className="max-w-full max-h-full object-contain select-none cursor-zoom-in"
                               onClick={() => setIsLightboxOpen(true)}
@@ -2428,8 +2457,8 @@ export default function App() {
                     : selectedProject.mediaUrl
                 )}
                 alt={selectedProject.title}
-                loading="lazy"
-                decoding="async"
+                loading="eager"
+                decoding="sync"
                 referrerPolicy="no-referrer"
                 className="max-w-full max-h-[82vh] object-contain select-none shadow-[0_0_80px_rgba(0,0,0,0.9)] scale-100 hover:scale-[1.01] transition-transform duration-500 cursor-zoom-out"
                 onClick={(e) => {
