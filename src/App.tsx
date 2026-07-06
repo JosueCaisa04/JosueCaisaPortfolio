@@ -2317,6 +2317,21 @@ export default function App() {
                       </div>
                     );
                   })()}
+
+                  {/* Live Web Link if available */}
+                  {selectedProject.liveUrl && (
+                    <div className="w-full max-w-lg px-4 sm:px-6 mt-4 z-10">
+                      <a
+                        href={selectedProject.liveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full py-4 px-4 bg-[#FF3B3F] hover:bg-white text-white hover:text-black font-black tracking-widest text-[11px] sm:text-xs uppercase transition-all duration-300 text-center flex items-center justify-center gap-2 shadow-[4px_4px_0px_rgba(255,255,255,0.15)] hover:shadow-none active:translate-y-1 cursor-pointer border border-[#FF3B3F] hover:border-white animate-pulse"
+                      >
+                        <ArrowUpRight className="w-5 h-5" />
+                        VAI AL SITO WEB DEL LAVORO SVOLTO ↗
+                      </a>
+                    </div>
+                  )}
                 </div>
 
                 {/* Right Column: Brief and Info */}
@@ -2381,20 +2396,7 @@ export default function App() {
 
                   </div>
 
-                  {/* Live Web Link if available */}
-                  {selectedProject.liveUrl && (
-                    <div className="border-t border-white/10 pt-4">
-                      <a
-                        href={selectedProject.liveUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full py-4 px-4 bg-[#FF3B3F] hover:bg-white text-white hover:text-black font-black tracking-widest text-[11px] sm:text-xs uppercase transition-all duration-300 text-center flex items-center justify-center gap-2 shadow-[4px_4px_0px_rgba(255,255,255,0.15)] hover:shadow-none active:translate-y-1 cursor-pointer border border-[#FF3B3F] hover:border-white animate-pulse"
-                      >
-                        <ArrowUpRight className="w-5 h-5" />
-                        VAI AL SITO WEB DEL LAVORO SVOLTO ↗
-                      </a>
-                    </div>
-                  )}
+
 
                   {/* CTA whatsapp */}
                   <div className="border-t border-white/10 pt-4">
