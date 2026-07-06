@@ -197,7 +197,7 @@ export const portfolioData: PortfolioData = {
   },
   philosophy: {
     intro: "Nel Digital Marketing, questa frase per me significa una cosa sola: prendere un'idea creativa astratta, un trend o una visione e trasformarli in contenuti reali, visivi, capaci di connettersi con le persone e posizionare un brand.",
-    quote: "Se abbiamo il potere di sognarlo, abbiamo anche il potere di renderlo realtà.",
+    quote: "Si tenemos el poder de soñarlo, también tenemos el poder de hacerlo realidad.",
     subtitle: "Sogni Visivi Tradotti in Realtà.",
     author: "Josue Caisachana"
   },

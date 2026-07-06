@@ -1971,7 +1971,7 @@ export default function App() {
  
               {/* Central Bold Quote statement with gradient highlights */}
               <blockquote className="text-2xl sm:text-4xl md:text-5xl lg:text-5xl font-black font-syne tracking-tight text-[#0F0F10] text-center leading-[1.2] max-w-4xl mx-auto my-6 py-4 px-2 select-none border-y border-[#0F0F10]/10 uppercase">
-                "Se abbiamo il potere di sognarlo, abbiamo anche il potere di <span className="text-[#FF3B3F] font-black relative inline-block">renderlo realtà."</span>
+                "Si tenemos el poder de soñarlo, también tenemos el poder de <span className="text-[#FF3B3F] font-black relative inline-block">hacerlo realidad."</span>
               </blockquote>
  
 
