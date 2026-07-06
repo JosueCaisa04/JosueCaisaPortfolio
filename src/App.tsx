@@ -708,7 +708,7 @@ export default function App() {
     const totalCacheImages = uniqueUrls.length;
 
     let cachedCount = 0;
-    let cacheFinished = false;
+    let fadeTimer: any = null;
 
     // Safety fallback: after 10 seconds, hide loader anyway to protect user experience
     const safetyTimeout = setTimeout(() => {
@@ -716,79 +716,87 @@ export default function App() {
       setIsLoadingScreen(false);
     }, 10000);
 
-    const checkComplete = () => {
-      // Step 1: Preload via Javascript Image cache
-      const cachePercent = totalCacheImages > 0 ? (cachedCount / totalCacheImages) * 100 : 100;
-      setLoadingProgress(Math.round(cachePercent));
+    // Promise wrapper to load a single Image URL and update progress
+    const loadSingleUrl = (url: string) => {
+      return new Promise<void>((resolve) => {
+        const fakeImg = new Image();
+        let resolved = false;
 
-      if (cachedCount >= totalCacheImages && !cacheFinished) {
-        cacheFinished = true;
-        
-        // Step 2: Now double check that ALL current DOM <img> tags are fully complete & loaded
-        const checkDomImages = () => {
-          const domImages = Array.from(document.querySelectorAll("img"));
-          const uncompletedImages = domImages.filter(img => !img.complete);
-
-          if (uncompletedImages.length === 0) {
-            setLoadingProgress(100);
-            const fadeTimer = setTimeout(() => {
-              setIsLoadingScreen(false);
-            }, 500);
-            return () => clearTimeout(fadeTimer);
-          } else {
-            // If any DOM image is not completed yet, wait for them
-            let resolvedDomCount = 0;
-            const totalToResolve = uncompletedImages.length;
-
-            uncompletedImages.forEach(img => {
-              const onImgLoaded = () => {
-                resolvedDomCount++;
-                if (resolvedDomCount >= totalToResolve) {
-                  setLoadingProgress(100);
-                  setTimeout(() => setIsLoadingScreen(false), 500);
-                }
-              };
-              img.addEventListener("load", onImgLoaded, { once: true });
-              img.addEventListener("error", onImgLoaded, { once: true });
-              
-              // Double check in case it completed right after filter
-              if (img.complete) {
-                onImgLoaded();
-              }
-            });
-          }
+        const handleLoad = () => {
+          if (resolved) return;
+          resolved = true;
+          cachedCount++;
+          const progress = totalCacheImages > 0 ? Math.round((cachedCount / totalCacheImages) * 100) : 100;
+          setLoadingProgress(progress);
+          resolve();
         };
 
-        // Give a tiny frame for React to mount elements, then check DOM images
-        setTimeout(checkDomImages, 50);
-      }
-    };
+        fakeImg.onload = handleLoad;
+        fakeImg.onerror = handleLoad;
+        fakeImg.src = url;
 
-    if (totalCacheImages === 0) {
-      cachedCount = 0;
-      checkComplete();
-    } else {
-      uniqueUrls.forEach(url => {
-        const img = new Image();
-        img.src = url;
-        if (img.complete) {
-          cachedCount++;
-          checkComplete();
-        } else {
-          img.onload = () => {
-            cachedCount++;
-            checkComplete();
-          };
-          img.onerror = () => {
-            cachedCount++; // still count it to prevent loading freeze
-            checkComplete();
-          };
+        // Double check if it is already completed/cached
+        if (fakeImg.complete) {
+          handleLoad();
         }
       });
-    }
+    };
+
+    // Load all static assets via Promise.all
+    const loadAllAssets = async () => {
+      if (totalCacheImages > 0) {
+        await Promise.all(uniqueUrls.map(loadSingleUrl));
+      } else {
+        setLoadingProgress(100);
+      }
+
+      // 2. Also query any DOM images immediately, remove loading="lazy" if any, and wait for them to load completely
+      const domImages = Array.from(document.querySelectorAll("img"));
+      domImages.forEach(img => {
+        img.removeAttribute("loading");
+      });
+
+      const loadDomImage = (img: HTMLImageElement) => {
+        return new Promise<void>((resolve) => {
+          const src = img.getAttribute("src");
+          if (!src) return resolve();
+
+          const fakeImg = new Image();
+          let resolved = false;
+
+          const handleLoad = () => {
+            if (resolved) return;
+            resolved = true;
+            resolve();
+          };
+
+          fakeImg.onload = handleLoad;
+          fakeImg.onerror = handleLoad;
+          fakeImg.src = src;
+
+          if (fakeImg.complete) {
+            handleLoad();
+          }
+        });
+      };
+
+      if (domImages.length > 0) {
+        await Promise.all(domImages.map(loadDomImage));
+      }
+
+      // Add a small security margin of 500ms before removing the preloader entirely
+      setLoadingProgress(100);
+      fadeTimer = setTimeout(() => {
+        setIsLoadingScreen(false);
+      }, 500);
+    };
+
+    // Execute the severe preloading process
+    loadAllAssets();
 
     return () => {
       clearTimeout(safetyTimeout);
+      if (fadeTimer) clearTimeout(fadeTimer);
     };
   }, []);
 
