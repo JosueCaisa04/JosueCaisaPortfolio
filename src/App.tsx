@@ -611,6 +611,7 @@ export default function App() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [videoMuted, setVideoMuted] = useState(true);
   const [isLoadingScreen, setIsLoadingScreen] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   
   // Custom owner WhatsApp number set directly to +39 3454690373 as requested
   const phoneNumber = "393454690373";
@@ -668,10 +669,98 @@ export default function App() {
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    // Collect all image URLs from portfolioData
+    const urls: string[] = [];
+
+    // About photos
+    if (portfolioData.about && portfolioData.about.photos) {
+      portfolioData.about.photos.forEach(p => {
+        if (p.url) urls.push(p.url);
+      });
+    }
+
+    // Projects preview images & gallery
+    if (portfolioData.projects) {
+      portfolioData.projects.forEach(p => {
+        if (p.mediaType === "image" && p.mediaUrl) {
+          urls.push(p.mediaUrl);
+        }
+        if (p.gallery) {
+          p.gallery.forEach(imgUrl => {
+            if (imgUrl) urls.push(imgUrl);
+          });
+        }
+      });
+    }
+
+    // Filter unique valid urls
+    const uniqueUrls = Array.from(new Set(urls.filter(Boolean)));
+    const totalImages = uniqueUrls.length;
+
+    let loadedCount = 0;
+    let windowLoaded = false;
+
+    const checkComplete = () => {
+      const imgPercent = totalImages > 0 ? (loadedCount / totalImages) * 100 : 100;
+      const windowPercent = windowLoaded ? 100 : 0;
+      
+      // Calculate overall progress: 70% weight to images, 30% to window load/document status
+      const overall = Math.round(imgPercent * 0.7 + windowPercent * 0.3);
+      setLoadingProgress(overall);
+
+      if (loadedCount >= totalImages && (windowLoaded || document.readyState === "complete")) {
+        setLoadingProgress(100);
+        const timer = setTimeout(() => {
+          setIsLoadingScreen(false);
+        }, 400);
+        return () => clearTimeout(timer);
+      }
+    };
+
+    // Listen to window load event
+    const handleWindowLoad = () => {
+      windowLoaded = true;
+      checkComplete();
+    };
+
+    if (document.readyState === "complete") {
+      windowLoaded = true;
+    } else {
+      window.addEventListener("load", handleWindowLoad);
+    }
+
+    // Safety fallback: after 6 seconds, hide loader anyway so user experience is never blocked
+    const safetyTimeout = setTimeout(() => {
+      setLoadingProgress(100);
       setIsLoadingScreen(false);
-    }, 1500);
-    return () => clearTimeout(timer);
+    }, 6000);
+
+    if (totalImages === 0) {
+      checkComplete();
+    } else {
+      uniqueUrls.forEach(url => {
+        const img = new Image();
+        img.src = url;
+        if (img.complete) {
+          loadedCount++;
+          checkComplete();
+        } else {
+          img.onload = () => {
+            loadedCount++;
+            checkComplete();
+          };
+          img.onerror = () => {
+            loadedCount++; // Count as loaded even on error so we don't block progress
+            checkComplete();
+          };
+        }
+      });
+    }
+
+    return () => {
+      window.removeEventListener("load", handleWindowLoad);
+      clearTimeout(safetyTimeout);
+    };
   }, []);
 
   useEffect(() => {
@@ -918,28 +1007,22 @@ export default function App() {
                 JOSUE CAISACHANA
               </motion.div>
               
-              {/* Elegant continuous modern loader bar */}
-              <div className="w-full h-[2px] bg-[#0F0F10]/5 relative overflow-hidden mb-3">
-                <motion.div 
-                  initial={{ left: "-100%" }}
-                  animate={{ left: "100%" }}
-                  transition={{ 
-                    repeat: Infinity, 
-                    duration: 1.2, 
-                    ease: "easeInOut" 
-                  }}
-                  className="absolute top-0 bottom-0 w-1/2 bg-[#FF3B3F]"
+              {/* Elegant real-progress modern loader bar */}
+              <div className="w-full h-[2px] bg-[#0F0F10]/5 relative overflow-hidden mb-4">
+                <div 
+                  style={{ width: `${loadingProgress}%` }}
+                  className="absolute top-0 bottom-0 left-0 bg-[#FF3B3F] transition-all duration-300 ease-out"
                 />
               </div>
 
-              {/* Status label using monospace styling */}
+              {/* Status label using monospace styling showing real progress */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 0.6 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
-                className="font-mono text-[9px] uppercase tracking-widest text-[#0F0F10]"
+                transition={{ duration: 0.4 }}
+                className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#0F0F10]"
               >
-                Caricamento...
+                Caricamento... {loadingProgress}%
               </motion.div>
             </div>
           </motion.div>

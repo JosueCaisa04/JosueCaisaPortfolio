@@ -331,7 +331,7 @@ export const portfolioData: PortfolioData = {
       software: ["Adobe Photoshop"],
       projectWorkNum: "PROJECT WORK #8",
       formatRecommended: "Immagine",
-      description: "Progetto realizzato per il corso di Social Media Marketing. Creazione di un post Instagram partendo dalla scelta casuale di un oggetto, successivamente associato a un brand per sviluppare un contenuto coerente con la sua identità e strategia comunicativa. Ho curato l'ideazione del concept, la definizione del messaggio e la progettazione grafica, curando composizione, tipografia e coerenza visiva.\n\n🔗 Link ai Brief Assegnati:\n• Brief 1: https://drive.google.com/file/d/1N3ECXGyWEdtVtv5V55cVveAb8x9ZBLYo/view?usp=drive_link\n• Brief 2: https://drive.google.com/file/d/1qJrV-dAgxZENmC4xdy2WbxlBXWHUrWjr/view?usp=drive_link"
+      description: "Progetto realizzato per il corso di Social Media Marketing. Creazione di un post Instagram partendo dalla scelta casuale di un oggetto, successivamente associato a un brand per sviluppare un contenuto coerente con la sua identità e strategia comunicativa. Ho curato l'ideazione del concept, la definizione del messaggio e la progettazione grafica, curando composizione, tipografia e coerenza visiva."
     },
     {
       id: "quindici-studio",
@@ -349,7 +349,7 @@ export const portfolioData: PortfolioData = {
       software: ["Adobe Photoshop"],
       projectWorkNum: "PROJECT WORK #9",
       formatRecommended: "Immagine",
-      description: "Progetto realizzato per il corso di Social Media Marketing, nato da un brief di Quindici Studio Milano che prevedeva la creazione di un post Instagram partendo da un oggetto assegnato. Concept sviluppato a partire da un disco della band XYQuarter, trasformandolo in un contenuto creativo. Il post è stato strutturato come annuncio dell’uscita del loro nuovo album in un luogo e orario immaginari, simulando una comunicazione reale di lancio evento.\n\n🔗 Link ai Brief Assegnati:\n• Brief 1: https://drive.google.com/file/d/1rCT-pqZCbh4pYPyy_2hYFd4j4h7wmAFH/view?usp=drive_link\n• Brief 2: https://drive.google.com/file/d/16MauUpONtrXupBG-ses_NWj7UD49PQGn/view?usp=drive_link"
+      description: "Progetto realizzato per il corso di Social Media Marketing, nato da un brief di Quindici Studio Milano che prevedeva la creazione di un post Instagram partendo da un oggetto assegnato. Concept sviluppato a partire da un disco della band XYQuarter, trasformandolo in un contenuto creativo. Il post è stato strutturato come annuncio dell’uscita del loro nuovo album in un luogo e orario immaginari, simulando una comunicazione reale di lancio evento."
     },
     {
       id: "ai-startup-chatbot",
