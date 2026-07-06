@@ -163,16 +163,16 @@ export const portfolioData: PortfolioData = {
     ],
     photos: [
       {
+        url: "https://i.ibb.co/2327rHjk/IMG-9772.avif",
+        caption: "Josue — On the Road, viaggi e nuove mete"
+      },
+      {
         url: "https://i.ibb.co/21SjGBTW/IMG-1200.avif",
         caption: "Josue — Digital Marketer & Strategia Creativa"
       },
       {
         url: "https://i.ibb.co/WpVw5YkJ/IMG-8054.avif",
         caption: "Analisi e logica — Fondendo numeri con creatività"
-      },
-      {
-        url: "https://i.ibb.co/pjDvT53L/IMG-9772.avif",
-        caption: "On the Road — Viaggi, calcio e nuove mete"
       },
       {
         url: "https://i.ibb.co/j2snZBw/IMG-E8756.jpg",

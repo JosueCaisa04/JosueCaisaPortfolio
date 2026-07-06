@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, useRef, memo, useMemo } from "react";
+import React, { useState, useEffect, useRef, memo, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Menu, 
@@ -610,6 +610,7 @@ export default function App() {
   const [scrolled, setScrolled] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [videoMuted, setVideoMuted] = useState(true);
+  const [isLoadingScreen, setIsLoadingScreen] = useState(true);
   
   // Custom owner WhatsApp number set directly to +39 3454690373 as requested
   const phoneNumber = "393454690373";
@@ -620,16 +621,77 @@ export default function App() {
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
+  // Swipe states for About Photo Carousel
+  const [aboutTouchStart, setAboutTouchStart] = useState<number | null>(null);
+  const [aboutTouchEnd, setAboutTouchEnd] = useState<number | null>(null);
+
+  // Swipe states for Modal Gallery
+  const [modalTouchStart, setModalTouchStart] = useState<number | null>(null);
+  const [modalTouchEnd, setModalTouchEnd] = useState<number | null>(null);
+
+  const handleAboutTouchStart = (e: React.TouchEvent) => {
+    setAboutTouchStart(e.targetTouches[0].clientX);
+    setAboutTouchEnd(null);
+  };
+  const handleAboutTouchMove = (e: React.TouchEvent) => {
+    setAboutTouchEnd(e.targetTouches[0].clientX);
+  };
+  const handleAboutTouchEnd = () => {
+    if (!aboutTouchStart || !aboutTouchEnd) return;
+    const distance = aboutTouchStart - aboutTouchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+    if (isLeftSwipe) {
+      setCurrentPhotoIndex((prev) => (prev === about.photos.length - 1 ? 0 : prev + 1));
+    } else if (isRightSwipe) {
+      setCurrentPhotoIndex((prev) => (prev === 0 ? about.photos.length - 1 : prev - 1));
+    }
+  };
+
+  const handleModalTouchStart = (e: React.TouchEvent) => {
+    setModalTouchStart(e.targetTouches[0].clientX);
+    setModalTouchEnd(null);
+  };
+  const handleModalTouchMove = (e: React.TouchEvent) => {
+    setModalTouchEnd(e.targetTouches[0].clientX);
+  };
+  const handleModalTouchEnd = () => {
+    if (!modalTouchStart || !modalTouchEnd) return;
+    const distance = modalTouchStart - modalTouchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+    if (isLeftSwipe && selectedProject?.gallery) {
+      setActiveSlideIndex((prev) => (prev === selectedProject.gallery!.length - 1 ? 0 : prev + 1));
+    } else if (isRightSwipe && selectedProject?.gallery) {
+      setActiveSlideIndex((prev) => (prev === 0 ? selectedProject.gallery!.length - 1 : prev - 1));
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoadingScreen(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     if (selectedProject) {
       setModalVideoMuted(false);
       setActiveSlideIndex(0);
       setIsLightboxOpen(false);
+      
+      // Force overlay scroll to top on mobile
+      setTimeout(() => {
+        const overlay = document.getElementById("cinematic-modal-overlay");
+        if (overlay) {
+          overlay.scrollTop = 0;
+        }
+      }, 50);
     }
   }, [selectedProject]);
 
   useEffect(() => {
-    if (selectedProject || isOpen || isLightboxOpen) {
+    if (selectedProject || isOpen || isLightboxOpen || isLoadingScreen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -637,7 +699,7 @@ export default function App() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [selectedProject, isOpen, isLightboxOpen]);
+  }, [selectedProject, isOpen, isLightboxOpen, isLoadingScreen]);
 
   const renderDescriptionWithLinks = (text: string) => {
     if (!text) return null;
@@ -837,6 +899,53 @@ export default function App() {
   return (
     <div className="bg-[#F4F3F0] text-[#0F0F10] font-sans selection:bg-[#FF3B3F] selection:text-white min-h-screen relative overflow-hidden">
       
+      <AnimatePresence mode="wait">
+        {isLoadingScreen && (
+          <motion.div
+            key="preloader"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.5, ease: "easeInOut" } }}
+            className="fixed inset-0 z-[9999] bg-[#F4F3F0] flex flex-col items-center justify-center pointer-events-auto"
+          >
+            <div className="flex flex-col items-center max-w-xs w-full px-6 text-center">
+              {/* Logo / Brand Name with fade/reveal animation */}
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="text-[#0F0F10] text-sm font-black tracking-[0.3em] uppercase mb-8 font-display"
+              >
+                JOSUE CAISACHANA
+              </motion.div>
+              
+              {/* Elegant continuous modern loader bar */}
+              <div className="w-full h-[2px] bg-[#0F0F10]/5 relative overflow-hidden mb-3">
+                <motion.div 
+                  initial={{ left: "-100%" }}
+                  animate={{ left: "100%" }}
+                  transition={{ 
+                    repeat: Infinity, 
+                    duration: 1.2, 
+                    ease: "easeInOut" 
+                  }}
+                  className="absolute top-0 bottom-0 w-1/2 bg-[#FF3B3F]"
+                />
+              </div>
+
+              {/* Status label using monospace styling */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.6 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                className="font-mono text-[9px] uppercase tracking-widest text-[#0F0F10]"
+              >
+                Caricamento...
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
       {/* 1. PREMIUM SWISS MINIMALIST NAVBAR */}
       <nav 
         id="navbar-root"
@@ -925,7 +1034,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="fixed inset-0 top-[60px] bg-[#F4F3F0] z-40 flex flex-col justify-between p-8 border-t border-[#0F0F10]/10 md:hidden"
+              className="fixed inset-0 top-[60px] bg-[#F4F3F0] z-40 flex flex-col justify-between p-8 border-t border-[#0F0F10]/10 md:hidden overflow-y-auto"
             >
               <div className="flex flex-col gap-6 text-xl uppercase tracking-widest font-bold pt-6">
                 <a 
@@ -1231,7 +1340,12 @@ export default function App() {
                 </div>
 
                 {/* Core Photo Viewport */}
-                <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#121212] flex items-center justify-center">
+                <div 
+                  className="relative aspect-[3/4] w-full overflow-hidden bg-[#121212] flex items-center justify-center"
+                  onTouchStart={handleAboutTouchStart}
+                  onTouchMove={handleAboutTouchMove}
+                  onTouchEnd={handleAboutTouchEnd}
+                >
                   <AnimatePresence mode="wait">
                     <motion.img
                       key={currentPhotoIndex}
@@ -1255,7 +1369,7 @@ export default function App() {
                       e.stopPropagation();
                       setCurrentPhotoIndex((prev) => (prev === 0 ? about.photos.length - 1 : prev - 1));
                     }}
-                    className="absolute left-2.5 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white hover:bg-[#FF3B3F] text-black hover:text-white border border-[#0F0F10]/10 shadow-md transition-all duration-300 opacity-60 lg:opacity-0 lg:group-hover:opacity-100 z-10"
+                    className="absolute left-2.5 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white hover:bg-[#FF3B3F] text-black hover:text-white border border-[#0F0F10]/10 shadow-md transition-all duration-300 opacity-100 md:opacity-0 md:group-hover:opacity-100 z-10 cursor-pointer"
                     aria-label="Foto precedente"
                   >
                     <ChevronLeft className="w-4 h-4" />
@@ -1266,7 +1380,7 @@ export default function App() {
                       e.stopPropagation();
                       setCurrentPhotoIndex((prev) => (prev === about.photos.length - 1 ? 0 : prev + 1));
                     }}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white hover:bg-[#FF3B3F] text-black hover:text-white border border-[#0F0F10]/10 shadow-md transition-all duration-300 opacity-60 lg:opacity-0 lg:group-hover:opacity-100 z-10"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white hover:bg-[#FF3B3F] text-black hover:text-white border border-[#0F0F10]/10 shadow-md transition-all duration-300 opacity-100 md:opacity-0 md:group-hover:opacity-100 z-10 cursor-pointer"
                     aria-label="Prossima foto"
                   >
                     <ChevronRight className="w-4 h-4" />
@@ -1918,7 +2032,7 @@ export default function App() {
               <div className="grid grid-cols-1 lg:grid-cols-12 w-full bg-[#0E0E10]">
                 
                 {/* Left Column: Media display stage */}
-                <div className="lg:col-span-7 bg-[#050507] border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col justify-center items-center relative overflow-hidden min-h-[320px] sm:min-h-[400px] lg:min-h-[520px] py-8">
+                <div className="lg:col-span-7 bg-[#050507] border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col justify-center items-center relative overflow-hidden min-h-[260px] sm:min-h-[400px] lg:min-h-[520px] py-4 sm:py-8">
                   {(() => {
                     const isVertical = selectedProject.formatRecommended?.toLowerCase().includes("verticale") || false;
                     const ytId = getYouTubeId(selectedProject.videoUrl);
@@ -1972,7 +2086,7 @@ export default function App() {
                     // Horizontal media view / Non-vertical layout
                     return (
                       <div className="w-full h-full flex flex-col items-center justify-center p-2 sm:p-4">
-                        <div className="relative w-full h-[380px] sm:h-[480px] lg:h-[550px] bg-[#040406] overflow-hidden border border-white/10 shadow-2xl flex items-center justify-center group rounded-none">
+                        <div className="relative w-full h-[220px] sm:h-[380px] md:h-[480px] lg:h-[550px] bg-[#040406] overflow-hidden border border-white/10 shadow-2xl flex items-center justify-center group rounded-none">
                           {isVideo ? (
                             ytId ? (
                               <div className="relative w-full h-full overflow-hidden">
@@ -1994,7 +2108,13 @@ export default function App() {
                               />
                             )
                           ) : selectedProject.gallery && selectedProject.gallery.length > 0 ? (
-                            <div className="relative w-full h-full flex items-center justify-center bg-[#040406] cursor-zoom-in" onClick={() => setIsLightboxOpen(true)}>
+                            <div 
+                              className="relative w-full h-full flex items-center justify-center bg-[#040406] cursor-zoom-in" 
+                              onClick={() => setIsLightboxOpen(true)}
+                              onTouchStart={handleModalTouchStart}
+                              onTouchMove={handleModalTouchMove}
+                              onTouchEnd={handleModalTouchEnd}
+                            >
                               <img
                                 src={resolveAssetUrl(selectedProject.gallery[activeSlideIndex])}
                                 alt={`${selectedProject.title} - Slide ${activeSlideIndex + 1}`}
@@ -2012,7 +2132,7 @@ export default function App() {
                                       e.stopPropagation();
                                       setActiveSlideIndex((prev) => (prev === 0 ? selectedProject.gallery!.length - 1 : prev - 1));
                                     }}
-                                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/75 border border-white/20 flex items-center justify-center text-white hover:bg-[#FF3B3F] hover:border-[#FF3B3F] transition-all cursor-pointer z-20 opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/75 border border-white/20 flex items-center justify-center text-white hover:bg-[#FF3B3F] hover:border-[#FF3B3F] transition-all cursor-pointer z-20 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100"
                                     aria-label="Immagine precedente"
                                   >
                                     <ChevronLeft className="w-6 h-6" />
@@ -2022,7 +2142,7 @@ export default function App() {
                                       e.stopPropagation();
                                       setActiveSlideIndex((prev) => (prev === selectedProject.gallery!.length - 1 ? 0 : prev + 1));
                                     }}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/75 border border-white/20 flex items-center justify-center text-white hover:bg-[#FF3B3F] hover:border-[#FF3B3F] transition-all cursor-pointer z-20 opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/75 border border-white/20 flex items-center justify-center text-white hover:bg-[#FF3B3F] hover:border-[#FF3B3F] transition-all cursor-pointer z-20 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100"
                                     aria-label="Prossima immagine"
                                   >
                                     <ChevronRight className="w-6 h-6" />
