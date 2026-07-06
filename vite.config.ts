@@ -5,7 +5,7 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    base: process.env.APPLET_ID ? './' : '/Portfolio_JosueCaisachana/',
+    base: process.env.APPLET_ID ? './' : '/JosueCaisaPortfolio/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
