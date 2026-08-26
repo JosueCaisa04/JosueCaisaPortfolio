@@ -61,22 +61,24 @@ function getProjectVideoSrc(url: string | undefined): string {
 
 function resolveAssetUrl(url: string | undefined): string {
   if (!url) return "";
+  const trimmed = url.trim();
+  if (!trimmed) return "";
 
   // Support Google Drive image URLs directly by using Google Drive public link format
-  const driveMatch = url.match(/(?:drive\.google\.com|docs\.google\.com|drive\.usercontent\.google\.com).*(?:id=|\/d\/)([a-zA-Z0-9_-]{25,50})/i);
+  const driveMatch = trimmed.match(/(?:drive\.google\.com|docs\.google\.com|drive\.usercontent\.google\.com).*(?:id=|\/d\/)([a-zA-Z0-9_-]{25,50})/i);
   if (driveMatch) {
     const fileId = driveMatch[1];
     return `https://drive.google.com/uc?id=${fileId}`;
   }
 
-  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
-    return url;
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:") || trimmed.startsWith("blob:")) {
+    return trimmed;
   }
-  const cleanUrl = url.startsWith("/") ? url.slice(1) : url;
+  const cleanUrl = trimmed.startsWith("/") ? trimmed.slice(1) : trimmed;
 
-  // Since we run in a custom Express server container on Cloud Run,
-  // assets are always served relative to the root '/' path.
-  return "/" + cleanUrl;
+  const base = import.meta.env.BASE_URL || "./";
+  const normalizedBase = base.endsWith("/") ? base : base + "/";
+  return normalizedBase + cleanUrl;
 }
 
 interface ScrollRevealProps {
@@ -944,9 +946,17 @@ export default function App() {
 
   const handleDownloadCV = (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
-    const downloadEndpoint = "/api/download-cv";
+    const base = import.meta.env.BASE_URL || "/";
+    const normalizedBase = base.endsWith("/") ? base : base + "/";
+    const staticCvPath = `${normalizedBase}Curriculum_Jeremi_Josue_Caisachana.pdf`;
 
-    fetch(downloadEndpoint)
+    fetch(staticCvPath)
+      .then((res) => {
+        if (!res.ok) {
+          return fetch("/api/download-cv");
+        }
+        return res;
+      })
       .then((res) => {
         if (!res.ok) throw new Error("Errore durante il download");
         return res.blob();

@@ -42,7 +42,7 @@ jobs:
       - name: Compila il sito statico con Vite
         env:
           BASE_PATH: ${{ steps.pages.outputs.base_path || './' }}
-        run: npx vite build --base="${{ steps.pages.outputs.base_path || './' }}"
+        run: npm run build:static
 
       - name: Carica gli elementi compilati (dist)
         uses: actions/upload-pages-artifact@v3
