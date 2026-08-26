@@ -1,12 +1,35 @@
 import express from "express";
 import path from "path";
 import https from "https";
+import fs from "fs";
 // @ts-ignore
 import convert from "heic-convert";
 
 async function startServer() {
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;
+
+  // Dedicated CV Download & View API Endpoint
+  app.get("/api/download-cv", (req, res) => {
+    let cvPath = path.join(process.cwd(), "public", "curriculum_josue_caisachana.pdf");
+    if (!fs.existsSync(cvPath)) {
+      cvPath = path.join(process.cwd(), "dist", "curriculum_josue_caisachana.pdf");
+    }
+    if (!fs.existsSync(cvPath)) {
+      cvPath = path.join(process.cwd(), "curriculum_josue_caisachana.pdf");
+    }
+
+    if (!fs.existsSync(cvPath)) {
+      return res.status(404).send("Curriculum non trovato.");
+    }
+
+    const isInline = req.query.view === "true";
+    const filename = "Curriculum_Jeremi_Josue_Caisachana.pdf";
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `${isInline ? "inline" : "attachment"}; filename="${filename}"`);
+    res.sendFile(cvPath);
+  });
 
   interface CacheEntry {
     confirmUrl: string;

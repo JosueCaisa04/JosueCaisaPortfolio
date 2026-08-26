@@ -942,6 +942,37 @@ export default function App() {
     };
   }, []);
 
+  const handleDownloadCV = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    const downloadEndpoint = "/api/download-cv";
+
+    fetch(downloadEndpoint)
+      .then((res) => {
+        if (!res.ok) throw new Error("Errore durante il download");
+        return res.blob();
+      })
+      .then((blob) => {
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = "Curriculum_Jeremi_Josue_Caisachana.pdf";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 2000);
+      })
+      .catch(() => {
+        const fallbackLink = document.createElement("a");
+        fallbackLink.href = "https://drive.google.com/uc?export=download&id=1kZf16TY5xeR7-qq_694MUJUoKwvGVrxp";
+        fallbackLink.download = "Curriculum_Jeremi_Josue_Caisachana.pdf";
+        fallbackLink.target = "_blank";
+        fallbackLink.rel = "noopener noreferrer";
+        document.body.appendChild(fallbackLink);
+        fallbackLink.click();
+        document.body.removeChild(fallbackLink);
+      });
+  };
+
   const handleSlideTimeout = (index: number) => {
     if (index !== currentReelIndex) return;
     const nextIndex = (currentReelIndex + 1) % portfolioData.reels.length;
@@ -1123,8 +1154,10 @@ export default function App() {
 
             <a 
               id="cta-cv-download-nav"
-              href="https://drive.google.com/uc?export=download&id=1sCegLRbbl3nvFEqdJrOAJ36tElIRor64"
-              className="relative px-4 py-2 overflow-hidden group rounded-none border border-[#0F0F10]/15 transition-all duration-300 hover:border-blue-500 bg-[#0F0F10]/[0.02]"
+              href="/api/download-cv"
+              onClick={handleDownloadCV}
+              download="Curriculum_Jeremi_Josue_Caisachana.pdf"
+              className="relative px-4 py-2 overflow-hidden group rounded-none border border-[#0F0F10]/15 transition-all duration-300 hover:border-blue-500 bg-[#0F0F10]/[0.02] cursor-pointer"
             >
               <div className="absolute inset-0 bg-blue-500/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
               <div className="relative flex items-center gap-2 text-xs uppercase tracking-widest text-[#0F0F10] group-hover:text-black transition-colors duration-300 font-semibold font-mono">
@@ -1206,9 +1239,13 @@ export default function App() {
                 </a>
 
                 <a 
-                  href="https://drive.google.com/uc?export=download&id=1sCegLRbbl3nvFEqdJrOAJ36tElIRor64"
-                  onClick={() => setIsOpen(false)}
-                  className="w-full text-center py-4 rounded-none bg-blue-500 hover:bg-blue-600 text-white font-bold tracking-widest text-sm uppercase flex items-center justify-center gap-2 transition-all duration-300 shadow-[4px_4px_0px_#0F0F10]"
+                  href="/api/download-cv"
+                  onClick={(e) => {
+                    setIsOpen(false);
+                    handleDownloadCV(e);
+                  }}
+                  download="Curriculum_Jeremi_Josue_Caisachana.pdf"
+                  className="w-full text-center py-4 rounded-none bg-blue-500 hover:bg-blue-600 text-white font-bold tracking-widest text-sm uppercase flex items-center justify-center gap-2 transition-all duration-300 shadow-[4px_4px_0px_#0F0F10] cursor-pointer"
                 >
                   <Download className="w-5 h-5 text-white" />
                   <span>SCARICA CURRICULUM 📥</span>
@@ -1355,8 +1392,10 @@ export default function App() {
 
                 <a 
                   id="hero-cta-cv-download"
-                  href="https://drive.google.com/uc?export=download&id=1sCegLRbbl3nvFEqdJrOAJ36tElIRor64"
-                  className="group px-6 py-4 bg-white hover:bg-blue-500/5 text-[#0F0F10] hover:text-blue-600 font-extrabold tracking-widest text-[11px] uppercase border-2 border-black rounded-none shadow-[4px_4px_0px_#0F0F10] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] text-center transition-all duration-300"
+                  href="/api/download-cv"
+                  onClick={handleDownloadCV}
+                  download="Curriculum_Jeremi_Josue_Caisachana.pdf"
+                  className="group px-6 py-4 bg-white hover:bg-blue-500/5 text-[#0F0F10] hover:text-blue-600 font-extrabold tracking-widest text-[11px] uppercase border-2 border-black rounded-none shadow-[4px_4px_0px_#0F0F10] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] text-center transition-all duration-300 cursor-pointer"
                 >
                   <span className="flex items-center justify-center gap-2">
                     <Download className="w-3.5 h-3.5 transition-transform duration-300 group-hover:scale-110 text-blue-500" />
@@ -2053,10 +2092,12 @@ export default function App() {
             </motion.a>
 
             <motion.a
-              href="https://drive.google.com/uc?export=download&id=1sCegLRbbl3nvFEqdJrOAJ36tElIRor64"
+              href="/api/download-cv"
+              onClick={handleDownloadCV}
+              download="Curriculum_Jeremi_Josue_Caisachana.pdf"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full sm:w-auto group relative inline-flex items-center justify-center gap-4 py-5 px-8 bg-blue-500 hover:bg-[#0F0F10] text-white hover:text-white font-mono font-bold tracking-widest text-xs uppercase rounded-sm transition-all duration-300 shadow-[0_15px_45px_-12px_rgba(59,130,246,0.5)] border border-blue-500 hover:border-[#0F0F10] hover:shadow-[0_15px_45px_-12px_rgba(15,15,16,0.25)]"
+              className="w-full sm:w-auto group relative inline-flex items-center justify-center gap-4 py-5 px-8 bg-blue-500 hover:bg-[#0F0F10] text-white hover:text-white font-mono font-bold tracking-widest text-xs uppercase rounded-sm transition-all duration-300 shadow-[0_15px_45px_-12px_rgba(59,130,246,0.5)] border border-blue-500 hover:border-[#0F0F10] hover:shadow-[0_15px_45px_-12px_rgba(15,15,16,0.25)] cursor-pointer"
             >
               <Download className="w-4 h-4 text-white transition-transform group-hover:scale-110" />
               <span>Scarica CV 📥</span>

@@ -91,6 +91,7 @@ export interface PortfolioData {
     whatsappNumber: string;
     whatsappMessage: string;
     email: string;
+    cvUrl?: string;
     socials: {
       platform: string;
       handle: string;
@@ -481,6 +482,7 @@ export const portfolioData: PortfolioData = {
     whatsappNumber: "393454690373",
     whatsappMessage: "Ciao Josue! Ho visto il tuo fantastico portfolio e la tua palestra digitale. Vorrei fare due chiacchiere per conoscerci!",
     email: "jeremyjosue334@gmail.com",
+    cvUrl: "https://drive.google.com/file/d/1kZf16TY5xeR7-qq_694MUJUoKwvGVrxp/view?usp=sharing",
     socials: [
       {
         platform: "Instagram",
