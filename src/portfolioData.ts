@@ -92,6 +92,7 @@ export interface PortfolioData {
     whatsappMessage: string;
     email: string;
     cvUrl?: string;
+    linkedinUrl?: string;
     socials: {
       platform: string;
       handle: string;
@@ -483,7 +484,13 @@ export const portfolioData: PortfolioData = {
     whatsappMessage: "Ciao Josue! Ho visto il tuo fantastico portfolio e la tua palestra digitale. Vorrei fare due chiacchiere per conoscerci!",
     email: "jeremyjosue334@gmail.com",
     cvUrl: "https://drive.google.com/file/d/1kZf16TY5xeR7-qq_694MUJUoKwvGVrxp/view?usp=sharing",
+    linkedinUrl: "https://www.linkedin.com/in/jeremi-josue-caisachana-442a18238",
     socials: [
+      {
+        platform: "LinkedIn",
+        handle: "Jeremi Josue Caisachana",
+        url: "https://www.linkedin.com/in/jeremi-josue-caisachana-442a18238"
+      },
       {
         platform: "Instagram",
         handle: "@josue.cais",

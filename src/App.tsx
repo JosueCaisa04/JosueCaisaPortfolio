@@ -38,7 +38,8 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
-  Download
+  Download,
+  Linkedin
 } from "lucide-react";
 import { portfolioData, Project } from "./portfolioData";
 
@@ -1163,6 +1164,20 @@ export default function App() {
             </a>
 
             <a 
+              id="cta-linkedin-nav"
+              href={contacts.linkedinUrl || "https://www.linkedin.com/in/jeremi-josue-caisachana-442a18238"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative px-4 py-2 overflow-hidden group rounded-none border border-[#0F0F10]/15 transition-all duration-300 hover:border-[#0A66C2] bg-[#0F0F10]/[0.02]"
+            >
+              <div className="absolute inset-0 bg-[#0A66C2]/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+              <div className="relative flex items-center gap-2 text-xs uppercase tracking-widest text-[#0F0F10] group-hover:text-black transition-colors duration-300 font-semibold font-mono">
+                <Linkedin className="w-4 h-4 text-[#0A66C2] transition-transform group-hover:scale-110" />
+                <span>LinkedIn</span>
+              </div>
+            </a>
+
+            <a 
               id="cta-cv-download-nav"
               href="/api/download-cv"
               onClick={handleDownloadCV}
@@ -1246,6 +1261,17 @@ export default function App() {
                 >
                   <Mail className="w-5 h-5 text-red-500" />
                   <span>EMAIL - SCRIVIMI</span>
+                </a>
+
+                <a 
+                  href={contacts.linkedinUrl || "https://www.linkedin.com/in/jeremi-josue-caisachana-442a18238"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsOpen(false)}
+                  className="w-full text-center py-4 rounded-none bg-[#0A66C2] hover:bg-[#004182] text-white font-bold tracking-widest text-sm uppercase flex items-center justify-center gap-2 transition-all duration-300 shadow-[4px_4px_0px_#0F0F10] cursor-pointer"
+                >
+                  <Linkedin className="w-5 h-5 text-white" />
+                  <span>LINKEDIN - CONNETTITI 🔗</span>
                 </a>
 
                 <a 
@@ -1397,6 +1423,19 @@ export default function App() {
                   <span className="flex items-center justify-center gap-2">
                     <Mail className="w-3.5 h-3.5 transition-transform duration-300 group-hover:scale-110 text-[#D90429]" />
                     <span>Invia un'Email</span>
+                  </span>
+                </a>
+
+                <a 
+                  id="hero-cta-linkedin"
+                  href={contacts.linkedinUrl || "https://www.linkedin.com/in/jeremi-josue-caisachana-442a18238"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group px-6 py-4 bg-white hover:bg-[#0A66C2]/5 text-[#0F0F10] hover:text-[#0A66C2] font-extrabold tracking-widest text-[11px] uppercase border-2 border-black rounded-none shadow-[4px_4px_0px_#0F0F10] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] text-center transition-all duration-300 cursor-pointer"
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    <Linkedin className="w-3.5 h-3.5 transition-transform duration-300 group-hover:scale-110 text-[#0A66C2]" />
+                    <span>LinkedIn 🔗</span>
                   </span>
                 </a>
 
@@ -2070,7 +2109,7 @@ export default function App() {
           </h2>
 
           {/* PRIMARY CONTACT BUTTONS */}
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
+          <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 mb-8">
             <motion.a
               href={`https://wa.me/${phoneNumber}?text=${encodeURIComponent(contacts.whatsappMessage)}`}
               target="_blank"
@@ -2099,6 +2138,22 @@ export default function App() {
               {/* Absolute visual highlights for extreme polish */}
               <span className="absolute -top-[1px] -left-[1px] w-2 h-2 border-t-2 border-l-2 border-transparent group-hover:border-white" />
               <span className="absolute -bottom-[1px] -right-[1px] w-2 h-2 border-b-2 border-r-2 border-transparent group-hover:border-white" />
+            </motion.a>
+
+            <motion.a
+              href={contacts.linkedinUrl || "https://www.linkedin.com/in/jeremi-josue-caisachana-442a18238"}
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full sm:w-auto group relative inline-flex items-center justify-center gap-4 py-5 px-8 bg-[#0A66C2] hover:bg-[#0F0F10] text-white hover:text-white font-mono font-bold tracking-widest text-xs uppercase rounded-sm transition-all duration-300 shadow-[0_15px_45px_-12px_rgba(10,102,194,0.5)] border border-[#0A66C2] hover:border-[#0F0F10] hover:shadow-[0_15px_45px_-12px_rgba(15,15,16,0.25)] cursor-pointer"
+            >
+              <Linkedin className="w-4 h-4 text-white transition-transform group-hover:scale-110" />
+              <span>LinkedIn 💼</span>
+              
+              {/* Absolute visual highlights for extreme polish */}
+              <span className="absolute -top-[1px] -left-[1px] w-2 h-2 border-t-2 border-l-2 border-transparent group-hover:border-[#0F0F10]" />
+              <span className="absolute -bottom-[1px] -right-[1px] w-2 h-2 border-b-2 border-r-2 border-transparent group-hover:border-[#0F0F10]" />
             </motion.a>
 
             <motion.a
@@ -2146,7 +2201,18 @@ export default function App() {
 
 
             {/* Right Side - Back to top mechanism and quick navigation */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <a 
+                href={contacts.linkedinUrl || "https://www.linkedin.com/in/jeremi-josue-caisachana-442a18238"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2.5 bg-white hover:bg-[#0A66C2] border border-[#0F0F10]/10 hover:border-[#0A66C2] text-gray-700 hover:text-white rounded-full transition-all duration-300 flex items-center gap-2 group shadow-sm text-xs font-mono font-semibold"
+                aria-label="Profilo LinkedIn"
+              >
+                <Linkedin className="w-3.5 h-3.5 text-[#0A66C2] group-hover:text-white transition-colors" />
+                <span>LinkedIn</span>
+              </a>
+
               <button 
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                 className="p-3 bg-white hover:bg-[#D90429] border border-[#0F0F10]/10 hover:border-[#D90429] text-gray-600 hover:text-white rounded-full transition-all duration-300 flex items-center justify-center group shadow-sm"
