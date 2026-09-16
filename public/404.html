@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Josue Caisachana | Portfolio</title>
+    <script>
+      // Single Page Application redirect for GitHub Pages
+      sessionStorage.redirect = location.href;
+      var pathSegments = location.pathname.split('/');
+      // If deployed at /JosueCaisaPortfolio/
+      if (pathSegments.length > 2 && pathSegments[1] === 'JosueCaisaPortfolio') {
+        location.replace('/JosueCaisaPortfolio/');
+      } else {
+        location.replace('/');
+      }
+    </script>
+  </head>
+  <body>
+    <p>Caricamento portfolio in corso...</p>
+  </body>
+</html>

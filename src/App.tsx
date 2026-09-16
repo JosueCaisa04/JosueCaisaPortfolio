@@ -95,37 +95,33 @@ function ScrollReveal({ children, delay = 0, className = "", style = {} }: Scrol
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Backup timer to guarantee items are shown even if IntersectionObserver fails to trigger in nested iframe/container environments
-    const backupTimer = setTimeout(() => {
+    if (!("IntersectionObserver" in window)) {
       setIsRevealed(true);
-    }, 150 + delay);
+      return;
+    }
+
+    const currentRef = ref.current;
+    if (!currentRef) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsRevealed(true);
           observer.unobserve(entry.target);
-          clearTimeout(backupTimer);
         }
       },
       {
-        threshold: 0.1,
-        rootMargin: "0px 0px -40px 0px"
+        threshold: 0.05,
+        rootMargin: "80px 0px 0px 0px"
       }
     );
 
-    const currentRef = ref.current;
-    if (currentRef) {
-      observer.observe(currentRef);
-    }
+    observer.observe(currentRef);
 
     return () => {
-      clearTimeout(backupTimer);
-      if (currentRef) {
-        observer.unobserve(currentRef);
-      }
+      observer.disconnect();
     };
-  }, [delay]);
+  }, []);
 
   return (
     <div
@@ -133,11 +129,10 @@ function ScrollReveal({ children, delay = 0, className = "", style = {} }: Scrol
       className={className}
       style={{
         opacity: isRevealed ? 1 : 0,
-        transform: isRevealed ? "scale(1) translateY(0)" : "scale(0.96) translateY(30px)",
+        transform: isRevealed ? "none" : "translateY(20px)",
         transition: isRevealed
-          ? `opacity 180ms cubic-bezier(0.175, 0.885, 0.32, 1.25) ${delay}ms, transform 200ms cubic-bezier(0.175, 0.885, 0.32, 1.275) ${delay}ms`
+          ? `opacity 350ms cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms, transform 350ms cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`
           : "none",
-        willChange: "transform, opacity",
         ...style
       }}
     >
@@ -423,7 +418,7 @@ const TikTokSlide = memo(function TikTokSlide({ reel, isActive, isPreload, onTim
               loop
               muted
               playsInline
-              preload="auto"
+              preload={isActive ? "auto" : "metadata"}
               onPlay={() => setIsPaused(false)}
               onPause={() => setIsPaused(true)}
               onLoadStart={() => setIsLoading(true)}
@@ -672,134 +667,43 @@ export default function App() {
   };
 
   useEffect(() => {
-    // 1. Collect all unique image URLs from portfolioData
-    const urls: string[] = [];
-
-    // About photos
-    if (portfolioData.about && portfolioData.about.photos) {
-      portfolioData.about.photos.forEach(p => {
-        if (p.url) urls.push(resolveAssetUrl(p.url));
-      });
+    // Collect critical above-the-fold assets to ensure instant crisp render
+    const criticalUrls: string[] = [];
+    if (portfolioData.about?.photos?.[0]?.url) {
+      criticalUrls.push(resolveAssetUrl(portfolioData.about.photos[0].url));
     }
 
-    // Projects preview images & gallery
-    if (portfolioData.projects) {
-      portfolioData.projects.forEach(p => {
-        if (p.mediaType === "image" && p.mediaUrl) {
-          urls.push(resolveAssetUrl(p.mediaUrl));
+    let isMounted = true;
+    let progress = 10;
+    setLoadingProgress(10);
+
+    // Fast, progressive loading interval (gives instant visual feedback and finishes in < 600ms)
+    const progressInterval = setInterval(() => {
+      progress += Math.floor(Math.random() * 20) + 15;
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(progressInterval);
+        if (isMounted) {
+          setLoadingProgress(100);
+          setTimeout(() => {
+            if (isMounted) setIsLoadingScreen(false);
+          }, 300);
         }
-        if (p.gallery) {
-          p.gallery.forEach(imgUrl => {
-            if (imgUrl) urls.push(resolveAssetUrl(imgUrl));
-          });
-        }
-      });
-    }
-
-    // YouTube reel covers
-    if (portfolioData.reels) {
-      portfolioData.reels.forEach(r => {
-        const ytId = getYouTubeId(r.videoUrl);
-        if (ytId) {
-          urls.push(`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`);
-        }
-      });
-    }
-
-    // Filter unique valid urls
-    const uniqueUrls = Array.from(new Set(urls.filter(Boolean)));
-    const totalCacheImages = uniqueUrls.length;
-
-    let cachedCount = 0;
-    let fadeTimer: any = null;
-
-    // Safety fallback: after 10 seconds, hide loader anyway to protect user experience
-    const safetyTimeout = setTimeout(() => {
-      setLoadingProgress(100);
-      setIsLoadingScreen(false);
-    }, 10000);
-
-    // Promise wrapper to load a single Image URL and update progress
-    const loadSingleUrl = (url: string) => {
-      return new Promise<void>((resolve) => {
-        const fakeImg = new Image();
-        let resolved = false;
-
-        const handleLoad = () => {
-          if (resolved) return;
-          resolved = true;
-          cachedCount++;
-          const progress = totalCacheImages > 0 ? Math.round((cachedCount / totalCacheImages) * 100) : 100;
-          setLoadingProgress(progress);
-          resolve();
-        };
-
-        fakeImg.onload = handleLoad;
-        fakeImg.onerror = handleLoad;
-        fakeImg.src = url;
-
-        // Double check if it is already completed/cached
-        if (fakeImg.complete) {
-          handleLoad();
-        }
-      });
-    };
-
-    // Load all static assets via Promise.all
-    const loadAllAssets = async () => {
-      if (totalCacheImages > 0) {
-        await Promise.all(uniqueUrls.map(loadSingleUrl));
       } else {
-        setLoadingProgress(100);
+        if (isMounted) setLoadingProgress(progress);
       }
+    }, 60);
 
-      // 2. Also query any DOM images immediately, remove loading="lazy" if any, and wait for them to load completely
-      const domImages = Array.from(document.querySelectorAll("img"));
-      domImages.forEach(img => {
-        img.removeAttribute("loading");
-      });
-
-      const loadDomImage = (img: HTMLImageElement) => {
-        return new Promise<void>((resolve) => {
-          const src = img.getAttribute("src");
-          if (!src) return resolve();
-
-          const fakeImg = new Image();
-          let resolved = false;
-
-          const handleLoad = () => {
-            if (resolved) return;
-            resolved = true;
-            resolve();
-          };
-
-          fakeImg.onload = handleLoad;
-          fakeImg.onerror = handleLoad;
-          fakeImg.src = src;
-
-          if (fakeImg.complete) {
-            handleLoad();
-          }
-        });
-      };
-
-      if (domImages.length > 0) {
-        await Promise.all(domImages.map(loadDomImage));
-      }
-
-      // Add a small security margin of 500ms before removing the preloader entirely
-      setLoadingProgress(100);
-      fadeTimer = setTimeout(() => {
-        setIsLoadingScreen(false);
-      }, 500);
-    };
-
-    // Execute the severe preloading process
-    loadAllAssets();
+    // Preload critical images in parallel in background
+    criticalUrls.forEach(url => {
+      if (!url) return;
+      const img = new Image();
+      img.src = url;
+    });
 
     return () => {
-      clearTimeout(safetyTimeout);
-      if (fadeTimer) clearTimeout(fadeTimer);
+      isMounted = false;
+      clearInterval(progressInterval);
     };
   }, []);
 
@@ -908,17 +812,22 @@ export default function App() {
     "progetto-relaunch": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800"
   };
 
-  // Scroll detection for sticky premium header and back-to-top button
+  // Scroll detection for sticky premium header and back-to-top button with RAF throttling
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      if (window.scrollY > 30) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isOver30 = window.scrollY > 30;
+          setScrolled(prev => (prev !== isOver30 ? isOver30 : prev));
+          const isOver400 = window.scrollY > 400;
+          setShowScrollTop(prev => (prev !== isOver400 ? isOver400 : prev));
+          ticking = false;
+        });
+        ticking = true;
       }
-      setShowScrollTop(window.scrollY > 400);
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -1759,8 +1668,8 @@ export default function App() {
                       <img 
                         src={resolveAssetUrl(project.mediaUrl)} 
                         alt={project.title}
-                        loading="eager"
-                        decoding="sync"
+                        loading="lazy"
+                        decoding="async"
                         referrerPolicy="no-referrer"
                         className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 select-none group-hover:scale-105 ${
                           hasVideo && isHovered ? "opacity-0" : "opacity-100"
@@ -2355,8 +2264,8 @@ export default function App() {
                               <img
                                 src={resolveAssetUrl(selectedProject.gallery[activeSlideIndex])}
                                 alt={`${selectedProject.title} - Slide ${activeSlideIndex + 1}`}
-                                loading="eager"
-                                decoding="sync"
+                                loading="lazy"
+                                decoding="async"
                                 referrerPolicy="no-referrer"
                                 className="max-w-full max-h-full object-contain select-none transition-all duration-300"
                               />
@@ -2412,8 +2321,8 @@ export default function App() {
                             <img
                               src={resolveAssetUrl(selectedProject.mediaUrl)}
                               alt={selectedProject.title}
-                              loading="eager"
-                              decoding="sync"
+                              loading="lazy"
+                              decoding="async"
                               referrerPolicy="no-referrer"
                               className="max-w-full max-h-full object-contain select-none cursor-zoom-in"
                               onClick={() => setIsLightboxOpen(true)}
@@ -2584,8 +2493,8 @@ export default function App() {
                     : selectedProject.mediaUrl
                 )}
                 alt={selectedProject.title}
-                loading="eager"
-                decoding="sync"
+                loading="lazy"
+                decoding="async"
                 referrerPolicy="no-referrer"
                 className="max-w-full max-h-[82vh] object-contain select-none shadow-[0_0_80px_rgba(0,0,0,0.9)] scale-100 hover:scale-[1.01] transition-transform duration-500 cursor-zoom-out"
                 onClick={(e) => {

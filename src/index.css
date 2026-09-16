@@ -17,6 +17,9 @@
 html {
   scroll-behavior: smooth;
   background-color: #F4F3F0;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
@@ -24,6 +27,22 @@ body {
   background-color: #F4F3F0;
   color: #0F0F10;
   overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* GPU hardware acceleration helper for smoother animations */
+.hardware-accelerated {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Optimize image rendering */
+img {
+  content-visibility: auto;
 }
 
 ::-webkit-scrollbar {
