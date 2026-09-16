@@ -30,19 +30,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
       - name: Installa le dipendenze
         run: |
-          if [ -f package-lock.json ]; then
-            npm ci || npm install
-          else
-            npm install
-          fi
+          npm ci || npm install --legacy-peer-deps
 
       - name: Compila il sito statico con Vite
         env:
           BASE_PATH: ${{ steps.pages.outputs.base_path || './' }}
         run: npm run build:static
+
+      - name: Assicura file .nojekyll e 404 per GitHub Pages
+        run: |
+          touch dist/.nojekyll
+          if [ -f public/404.html ]; then cp public/404.html dist/404.html; fi
 
       - name: Carica gli elementi compilati (dist)
         uses: actions/upload-pages-artifact@v3
