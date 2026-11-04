@@ -39,9 +39,13 @@ import {
   ChevronRight,
   FileText,
   Download,
-  Linkedin
+  Linkedin,
+  FolderUp,
+  Upload
 } from "lucide-react";
 import { portfolioData, Project } from "./portfolioData";
+import { ProjectCardMedia } from "./components/ProjectCardMedia";
+import { MediaManagerModal } from "./components/MediaManagerModal";
 
 function getYouTubeId(url: string | undefined): string | null {
   if (!url) return null;
@@ -76,6 +80,11 @@ function resolveAssetUrl(url: string | undefined): string {
     return trimmed;
   }
   const cleanUrl = trimmed.startsWith("/") ? trimmed.slice(1) : trimmed;
+
+  // In Vite dev mode, root path /asset.jpg is universally served by the dev server
+  if (import.meta.env.DEV) {
+    return `/${cleanUrl}`;
+  }
 
   const base = import.meta.env.BASE_URL || "./";
   const normalizedBase = base.endsWith("/") ? base : base + "/";
@@ -619,6 +628,47 @@ export default function App() {
   const [modalVideoMuted, setModalVideoMuted] = useState(false);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isMediaManagerOpen, setIsMediaManagerOpen] = useState(false);
+  const [customImages, setCustomImages] = useState<Record<string, string>>(() => {
+    try {
+      const saved = localStorage.getItem("josue_portfolio_custom_images");
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const handleUploadCustomImage = (projectId: string, file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      if (dataUrl) {
+        setCustomImages((prev) => {
+          const next = { ...prev, [projectId]: dataUrl };
+          try {
+            localStorage.setItem("josue_portfolio_custom_images", JSON.stringify(next));
+          } catch (err) {
+            console.warn("Storage full", err);
+          }
+          return next;
+        });
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleResetCustomImage = (projectId: string) => {
+    setCustomImages((prev) => {
+      const next = { ...prev };
+      delete next[projectId];
+      try {
+        localStorage.setItem("josue_portfolio_custom_images", JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
 
   // Swipe states for About Photo Carousel
   const [aboutTouchStart, setAboutTouchStart] = useState<number | null>(null);
@@ -667,43 +717,109 @@ export default function App() {
   };
 
   useEffect(() => {
-    // Collect critical above-the-fold assets to ensure instant crisp render
-    const criticalUrls: string[] = [];
-    if (portfolioData.about?.photos?.[0]?.url) {
-      criticalUrls.push(resolveAssetUrl(portfolioData.about.photos[0].url));
+    let isMounted = true;
+    let hasFinished = false;
+
+    // Collect every single image across the entire portfolio to ensure 100% preloaded visuals
+    const allAssetUrls: string[] = [];
+    const seen = new Set<string>();
+
+    portfolioData.projects.forEach((p) => {
+      if (p.mediaUrl) {
+        const resolved = resolveAssetUrl(p.mediaUrl);
+        if (resolved && !seen.has(resolved)) {
+          seen.add(resolved);
+          allAssetUrls.push(resolved);
+        }
+      }
+      if (p.gallery) {
+        p.gallery.forEach((g) => {
+          const resolved = resolveAssetUrl(g);
+          if (resolved && !seen.has(resolved)) {
+            seen.add(resolved);
+            allAssetUrls.push(resolved);
+          }
+        });
+      }
+    });
+
+    if (portfolioData.about?.photos) {
+      portfolioData.about.photos.forEach((ph) => {
+        if (ph.url) {
+          const resolved = resolveAssetUrl(ph.url);
+          if (resolved && !seen.has(resolved)) {
+            seen.add(resolved);
+            allAssetUrls.push(resolved);
+          }
+        }
+      });
     }
 
-    let isMounted = true;
-    let progress = 10;
+    const total = allAssetUrls.length;
+    let loadedCount = 0;
     setLoadingProgress(10);
 
-    // Fast, progressive loading interval (gives instant visual feedback and finishes in < 600ms)
-    const progressInterval = setInterval(() => {
-      progress += Math.floor(Math.random() * 20) + 15;
-      if (progress >= 100) {
-        progress = 100;
-        clearInterval(progressInterval);
-        if (isMounted) {
-          setLoadingProgress(100);
-          setTimeout(() => {
-            if (isMounted) setIsLoadingScreen(false);
-          }, 300);
-        }
-      } else {
-        if (isMounted) setLoadingProgress(progress);
+    const finishLoading = () => {
+      if (hasFinished) return;
+      hasFinished = true;
+      if (isMounted) {
+        setLoadingProgress(100);
+        setTimeout(() => {
+          if (isMounted) setIsLoadingScreen(false);
+        }, 350);
       }
-    }, 60);
+    };
 
-    // Preload critical images in parallel in background
-    criticalUrls.forEach(url => {
-      if (!url) return;
+    if (total === 0) {
+      finishLoading();
+      return;
+    }
+
+    // Safety timeout: prevent user from ever getting stuck if network drops
+    const safetyTimeout = setTimeout(() => {
+      finishLoading();
+    }, 6000);
+
+    allAssetUrls.forEach((url) => {
       const img = new Image();
+      let handled = false;
+
+      const onItemCompleted = () => {
+        if (handled) return;
+        handled = true;
+        loadedCount++;
+        if (isMounted) {
+          const progressPercent = Math.min(100, Math.round((loadedCount / total) * 100));
+          setLoadingProgress((prev) => Math.max(prev, progressPercent));
+          if (loadedCount >= total) {
+            finishLoading();
+          }
+        }
+      };
+
+      img.onload = () => {
+        if (img.decode) {
+          img.decode().then(onItemCompleted).catch(onItemCompleted);
+        } else {
+          onItemCompleted();
+        }
+      };
+      img.onerror = onItemCompleted;
       img.src = url;
+
+      if (img.complete) {
+        if (img.decode) {
+          img.decode().then(onItemCompleted).catch(onItemCompleted);
+        } else {
+          onItemCompleted();
+        }
+      }
     });
 
     return () => {
       isMounted = false;
-      clearInterval(progressInterval);
+      hasFinished = true;
+      clearTimeout(safetyTimeout);
     };
   }, []);
 
@@ -1010,7 +1126,7 @@ export default function App() {
                 transition={{ duration: 0.4 }}
                 className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#0F0F10]"
               >
-                Caricamento... {loadingProgress}%
+                Caricamento immagini e progetti... {loadingProgress}%
               </motion.div>
             </div>
           </motion.div>
@@ -1099,6 +1215,19 @@ export default function App() {
                 <span>Scarica CV</span>
               </div>
             </a>
+
+            <button 
+              type="button"
+              id="cta-media-manager-nav"
+              onClick={() => setIsMediaManagerOpen(true)}
+              className="relative px-3.5 py-2 overflow-hidden group rounded-none border border-[#0F0F10]/20 transition-all duration-300 hover:border-[#FF3B3F] bg-black text-white hover:bg-[#FF3B3F] cursor-pointer shadow-[2px_2px_0px_#0F0F10]"
+              title="Gestisci o carica immagini dei lavori"
+            >
+              <div className="relative flex items-center gap-1.5 text-xs uppercase tracking-widest transition-colors duration-300 font-bold font-mono">
+                <FolderUp className="w-3.5 h-3.5 text-[#FF3B3F] group-hover:text-white" />
+                <span>Carica Lavori</span>
+              </div>
+            </button>
           </div>
 
           {/* Mobile Hamburguer trigger */}
@@ -1182,6 +1311,18 @@ export default function App() {
                   <Linkedin className="w-5 h-5 text-white" />
                   <span>LINKEDIN - CONNETTITI 🔗</span>
                 </a>
+
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setIsOpen(false);
+                    setIsMediaManagerOpen(true);
+                  }}
+                  className="w-full text-center py-4 rounded-none bg-black hover:bg-[#FF3B3F] text-white font-bold tracking-widest text-sm uppercase flex items-center justify-center gap-2 transition-all duration-300 shadow-[4px_4px_0px_#0F0F10] cursor-pointer"
+                >
+                  <FolderUp className="w-5 h-5 text-[#FF3B3F]" />
+                  <span>CARICA O SOSTITUISCI LAVORI 📷</span>
+                </button>
 
                 <a 
                   href="/api/download-cv"
@@ -1469,6 +1610,12 @@ export default function App() {
                       src={resolveAssetUrl(about.photos[currentPhotoIndex].url) || undefined}
                       alt={about.photos[currentPhotoIndex].caption}
                       referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        if (!target.src.includes("IMG-8054.avif") && !target.src.includes("IMG-E8756.jpg")) {
+                          target.src = resolveAssetUrl("/IMG-8054.avif");
+                        }
+                      }}
                       initial={{ opacity: 0.2, scale: 0.98 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0.2, scale: 1.02 }}
@@ -1658,59 +1805,20 @@ export default function App() {
                     onClick={() => setSelectedProject(project)}
                   >
                     {/* Media preview block */}
-                    <div className="h-52 relative overflow-hidden bg-[#0F0F10] border-b-2 border-[#0F0F10]">
-                      <div className="absolute top-3 left-3 z-20">
-                        <span className="px-2 py-0.5 bg-black border border-[#FF3B3F]/30 text-[8px] font-mono text-white uppercase rounded-none font-bold">
-                          {project.projectWorkNum}
-                        </span>
-                      </div>
-
-                      <img 
-                        src={resolveAssetUrl(project.mediaUrl)} 
-                        alt={project.title}
-                        loading="lazy"
-                        decoding="async"
-                        referrerPolicy="no-referrer"
-                        className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 select-none group-hover:scale-105 ${
-                          hasVideo && isHovered ? "opacity-0" : "opacity-100"
-                        }`}
+                    <div className="relative overflow-hidden">
+                      <ProjectCardMedia
+                        project={project}
+                        isHovered={isHovered}
+                        hasVideo={Boolean(hasVideo)}
+                        customImage={customImages[project.id]}
+                        onOpenUpload={(_, e) => {
+                          e.stopPropagation();
+                          setIsMediaManagerOpen(true);
+                        }}
+                        resolveAssetUrl={resolveAssetUrl}
+                        getYouTubeId={getYouTubeId}
+                        getProjectVideoSrc={getProjectVideoSrc}
                       />
-
-                      {hasVideo && !getYouTubeId(project.videoUrl) && (
-                        <video
-                          src={getProjectVideoSrc(project.videoUrl)}
-                          autoPlay
-                          loop
-                          muted
-                          playsInline
-                          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 pointer-events-none ${
-                            isHovered ? "opacity-100" : "opacity-0"
-                          }`}
-                        />
-                      )}
-
-                      {hasVideo && getYouTubeId(project.videoUrl) && isHovered && (() => {
-                        const ytId = getYouTubeId(project.videoUrl);
-                        return (
-                          <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-10">
-                            <iframe
-                              src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=0&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0&disablekb=1&enablejsapi=1`}
-                              className="absolute w-[130%] h-[130%] -top-[15%] -left-[15%] pointer-events-none border-none select-none max-w-none max-h-none rounded-none"
-                              title={project.title}
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            />
-                          </div>
-                        );
-                      })()}
-
-                      {/* Play overlay decoration on hover for multimedia projects */}
-                      {project.mediaType === "video" && (
-                        <div className="absolute top-3 right-3 z-20">
-                          <div className="w-8 h-8 rounded-none bg-white border-2 border-black flex items-center justify-center group-hover:bg-[#FF3B3F] group-hover:text-white transition-colors duration-200 shadow-[2px_2px_0px_#0F0F10]">
-                            <Play className="w-3.5 h-3.5 fill-current group-hover:scale-110 transition-transform duration-200" />
-                          </div>
-                        </div>
-                      )}
 
                       {/* HUD overlay for cards */}
                       <AnimatePresence>
@@ -2165,13 +2273,15 @@ export default function App() {
                   </span>
                 </div>
 
-                <button 
-                  onClick={() => setSelectedProject(null)}
-                  className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 transition-all duration-200 cursor-pointer rounded-none border border-white/10 flex items-center justify-center"
-                  aria-label="Chiudi"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => setSelectedProject(null)}
+                    className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 transition-all duration-200 cursor-pointer rounded-none border border-white/10 flex items-center justify-center"
+                    aria-label="Chiudi"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
 
               {/* Grid split */}
@@ -2262,11 +2372,21 @@ export default function App() {
                               onTouchEnd={handleModalTouchEnd}
                             >
                               <img
-                                src={resolveAssetUrl(selectedProject.gallery[activeSlideIndex])}
+                                src={customImages[selectedProject.id] || resolveAssetUrl(selectedProject.gallery[activeSlideIndex])}
                                 alt={`${selectedProject.title} - Slide ${activeSlideIndex + 1}`}
-                                loading="lazy"
+                                loading="eager"
                                 decoding="async"
                                 referrerPolicy="no-referrer"
+                                onError={(e) => {
+                                  const target = e.currentTarget;
+                                  if (target.dataset.fallbackTried !== "true") {
+                                    target.dataset.fallbackTried = "true";
+                                    const raw = selectedProject.gallery ? selectedProject.gallery[activeSlideIndex] : "";
+                                    if (raw && !raw.startsWith("http")) {
+                                      target.src = "/" + raw.replace(/^\.?\//, "");
+                                    }
+                                  }
+                                }}
                                 className="max-w-full max-h-full object-contain select-none transition-all duration-300"
                               />
                               
@@ -2319,11 +2439,21 @@ export default function App() {
                             </div>
                           ) : (
                             <img
-                              src={resolveAssetUrl(selectedProject.mediaUrl)}
+                              src={customImages[selectedProject.id] || resolveAssetUrl(selectedProject.mediaUrl)}
                               alt={selectedProject.title}
-                              loading="lazy"
+                              loading="eager"
                               decoding="async"
                               referrerPolicy="no-referrer"
+                              onError={(e) => {
+                                const target = e.currentTarget;
+                                if (target.dataset.fallbackTried !== "true") {
+                                  target.dataset.fallbackTried = "true";
+                                  const raw = selectedProject.mediaUrl || "";
+                                  if (raw && !raw.startsWith("http")) {
+                                    target.src = "/" + raw.replace(/^\.?\//, "");
+                                  }
+                                }
+                              }}
                               className="max-w-full max-h-full object-contain select-none cursor-zoom-in"
                               onClick={() => setIsLightboxOpen(true)}
                             />
@@ -2487,15 +2617,28 @@ export default function App() {
             {/* Lightbox Main Stage */}
             <div className="relative flex-grow w-full flex items-center justify-center overflow-hidden py-4">
               <img
-                src={resolveAssetUrl(
-                  selectedProject.gallery && selectedProject.gallery.length > 0 
-                    ? selectedProject.gallery[activeSlideIndex] 
-                    : selectedProject.mediaUrl
-                )}
+                src={
+                  customImages[selectedProject.id] ||
+                  resolveAssetUrl(
+                    selectedProject.gallery && selectedProject.gallery.length > 0 
+                      ? selectedProject.gallery[activeSlideIndex] 
+                      : selectedProject.mediaUrl
+                  )
+                }
                 alt={selectedProject.title}
                 loading="lazy"
                 decoding="async"
                 referrerPolicy="no-referrer"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  if (target.dataset.fallbackTried !== "true") {
+                    target.dataset.fallbackTried = "true";
+                    const currentSrc = (selectedProject.gallery && selectedProject.gallery.length > 0)
+                      ? selectedProject.gallery[activeSlideIndex]
+                      : selectedProject.mediaUrl;
+                    target.src = "/" + (currentSrc || "").replace(/^\.?\//, "");
+                  }
+                }}
                 className="max-w-full max-h-[82vh] object-contain select-none shadow-[0_0_80px_rgba(0,0,0,0.9)] scale-100 hover:scale-[1.01] transition-transform duration-500 cursor-zoom-out"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -2570,6 +2713,17 @@ export default function App() {
           </motion.button>
         )}
       </AnimatePresence>
+
+      {/* Media Manager Modal for Live Upload and GitHub Instructions */}
+      <MediaManagerModal
+        isOpen={isMediaManagerOpen}
+        onClose={() => setIsMediaManagerOpen(false)}
+        projects={portfolioData.projects}
+        customImages={customImages}
+        onUploadCustomImage={handleUploadCustomImage}
+        onResetCustomImage={handleResetCustomImage}
+        resolveAssetUrl={resolveAssetUrl}
+      />
 
     </div>
   );

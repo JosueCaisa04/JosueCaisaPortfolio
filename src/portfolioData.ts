@@ -165,19 +165,19 @@ export const portfolioData: PortfolioData = {
     ],
     photos: [
       {
-        url: "https://i.ibb.co/2327rHjk/IMG-9772.avif",
+        url: "/IMG-9772.jpg",
         caption: "Josue — On the Road, viaggi e nuove mete"
       },
       {
-        url: "https://i.ibb.co/21SjGBTW/IMG-1200.avif",
+        url: "/IMG-1200.jpg",
         caption: "Josue — Digital Marketer & Strategia Creativa"
       },
       {
-        url: "https://i.ibb.co/WpVw5YkJ/IMG-8054.avif",
+        url: "/IMG-8054.jpg",
         caption: "Analisi e logica — Fondendo numeri con creatività"
       },
       {
-        url: "https://i.ibb.co/j2snZBw/IMG-E8756.jpg",
+        url: "/IMG-E8756.jpg",
         caption: "Creatività in azione — Sogni visivi e digital marketing"
       }
     ],
@@ -211,8 +211,8 @@ export const portfolioData: PortfolioData = {
       detailCategory: "PROGETTO GRAFICO",
       gridSize: "grande",
       mediaType: "image",
-      mediaUrl: "https://i.ibb.co/LX7Qx707/Caisachana-Vans-esportato.jpg",
-      gallery: ["https://i.ibb.co/LX7Qx707/Caisachana-Vans-esportato.jpg"],
+      mediaUrl: "https://res.cloudinary.com/xibhs76y/image/upload/v1793707392/Caisachana_Vans_esportato.jpg",
+      gallery: ["https://res.cloudinary.com/xibhs76y/image/upload/v1793707392/Caisachana_Vans_esportato.jpg"],
       role: "Creative Concept & Graphic Design",
       software: ["Adobe Photoshop"],
       projectWorkNum: "PROJECT WORK #1",
@@ -226,8 +226,8 @@ export const portfolioData: PortfolioData = {
       detailCategory: "PROGETTO MULTIMEDIALE",
       gridSize: "grande",
       mediaType: "image",
-      mediaUrl: "https://i.ibb.co/67mG3WC8/acmilan-jack.png",
-      gallery: ["https://i.ibb.co/67mG3WC8/acmilan-jack.png"],
+      mediaUrl: "https://res.cloudinary.com/xibhs76y/image/upload/v1793707393/acmilan_jack.png",
+      gallery: ["https://res.cloudinary.com/xibhs76y/image/upload/v1793707393/acmilan_jack.png"],
       role: "3D Modeling & Visual Compositing",
       software: ["Adobe InDesign", "Adobe Photoshop"],
       projectWorkNum: "PROJECT WORK #2",
@@ -241,8 +241,8 @@ export const portfolioData: PortfolioData = {
       detailCategory: "PROGETTO AI TECH",
       gridSize: "medio",
       mediaType: "image",
-      mediaUrl: "https://i.ibb.co/BHSVYK3g/jager.png",
-      gallery: ["https://i.ibb.co/BHSVYK3g/jager.png"],
+      mediaUrl: "https://res.cloudinary.com/xibhs76y/image/upload/v1793707395/jager.png",
+      gallery: ["https://res.cloudinary.com/xibhs76y/image/upload/v1793707395/jager.png"],
       role: "AI Prompting & Post-Production",
       software: ["Flow (IA)", "Adobe Photoshop"],
       projectWorkNum: "PROJECT WORK #3",
@@ -256,15 +256,15 @@ export const portfolioData: PortfolioData = {
       detailCategory: "PROGETTO GRAFICO",
       gridSize: "medio",
       mediaType: "image",
-      mediaUrl: "https://i.ibb.co/ZpRJr68k/Milan-crisi2-page-0001.jpg",
+      mediaUrl: "https://res.cloudinary.com/xibhs76y/image/upload/v1793707929/Milan_crisi2_page-0001.jpg",
       gallery: [
-        "https://i.ibb.co/ZpRJr68k/Milan-crisi2-page-0001.jpg",
-        "https://i.ibb.co/pYPh3CN/Milan-crisi2-page-0002.jpg",
-        "https://i.ibb.co/21XGmDGj/Milan-crisi2-page-0003.jpg",
-        "https://i.ibb.co/nFqX5hR/Milan-crisi2-page-0004.jpg",
-        "https://i.ibb.co/Sw6pPV1H/Milan-crisi2-page-0005.jpg",
-        "https://i.ibb.co/Y4D7y6SF/Milan-crisi2-page-0006.jpg",
-        "https://i.ibb.co/qLgLXn0w/Milan-crisi2-page-0007.jpg"
+        "https://res.cloudinary.com/xibhs76y/image/upload/v1793707929/Milan_crisi2_page-0001.jpg",
+        "https://res.cloudinary.com/xibhs76y/image/upload/v1793707930/Milan_crisi2_page-0002.jpg",
+        "https://res.cloudinary.com/xibhs76y/image/upload/v1793707932/Milan_crisi2_page-0003.jpg",
+        "https://res.cloudinary.com/xibhs76y/image/upload/v1793707932/Milan_crisi2_page-0004.jpg",
+        "https://res.cloudinary.com/xibhs76y/image/upload/v1793707932/Milan_crisi2_page-0005.jpg",
+        "https://res.cloudinary.com/xibhs76y/image/upload/v1793707932/Milan_crisi2_page-0006.jpg",
+        "https://res.cloudinary.com/xibhs76y/image/upload/v1793707933/Milan_crisi2_page-0007.jpg"
       ],
       role: "Content Strategy & Layout Design",
       software: ["Adobe Photoshop"],
@@ -279,7 +279,7 @@ export const portfolioData: PortfolioData = {
       detailCategory: "PROGETTO MULTIMEDIALE",
       gridSize: "grande",
       mediaType: "video",
-      mediaUrl: "https://i.ibb.co/GvFHsNVX/IMG-0558.jpg",
+      mediaUrl: "/vlog_fiera_preview.jpg",
       videoUrl: "https://youtube.com/shorts/ZP43JtpVFKk?feature=share",
       role: "Video Making & Editing",
       software: ["CapCut"],
@@ -294,7 +294,7 @@ export const portfolioData: PortfolioData = {
       detailCategory: "PROGETTO MULTIMEDIALE",
       gridSize: "grande",
       mediaType: "video",
-      mediaUrl: "https://i.ibb.co/rrsQdMR/IMG-0036.avif",
+      mediaUrl: "/its_vs_universita_preview_converted.jpg",
       videoUrl: "https://youtube.com/shorts/1ZBxC3fMGpw?si=uOMCOHCNnMeOMWW-",
       role: "Creative Concept & Social Editing",
       software: ["Adobe Premiere Pro"],
@@ -309,7 +309,7 @@ export const portfolioData: PortfolioData = {
       detailCategory: "PROGETTO MULTIMEDIALE",
       gridSize: "grande",
       mediaType: "video",
-      mediaUrl: "https://i.ibb.co/zVcyTdLd/IMG-0242.avif",
+      mediaUrl: "/marilyn_coca_preview_converted.jpg",
       videoUrl: "https://youtube.com/shorts/An7BEPhf2ss?feature=share",
       role: "Graphic Design & Branding",
       software: ["Canva"],
@@ -324,10 +324,10 @@ export const portfolioData: PortfolioData = {
       detailCategory: "PROGETTO SOCIAL",
       gridSize: "stretto",
       mediaType: "image",
-      mediaUrl: "https://i.ibb.co/Q3rNxxfv/Valigie-caisa-page-0001.jpg",
+      mediaUrl: "https://res.cloudinary.com/xibhs76y/image/upload/v1793707782/Valigie_caisa_page-0001.jpg",
       gallery: [
-        "https://i.ibb.co/Q3rNxxfv/Valigie-caisa-page-0001.jpg",
-        "https://i.ibb.co/tpY9jncB/Valigie-caisa-page-0002.jpg"
+        "https://res.cloudinary.com/xibhs76y/image/upload/v1793707782/Valigie_caisa_page-0001.jpg",
+        "https://res.cloudinary.com/xibhs76y/image/upload/v1793707783/Valigie_caisa_page-0002.jpg"
       ],
       role: "Visual Design",
       software: ["Adobe Photoshop"],
@@ -342,10 +342,10 @@ export const portfolioData: PortfolioData = {
       detailCategory: "PROGETTO SOCIAL",
       gridSize: "medio",
       mediaType: "image",
-      mediaUrl: "https://i.ibb.co/dsT1y5zJ/Post-Aereo-Grav-page-0001.jpg",
+      mediaUrl: "https://res.cloudinary.com/xibhs76y/image/upload/v1793709352/PostAereoGrav_page-0001.jpg",
       gallery: [
-        "https://i.ibb.co/dsT1y5zJ/Post-Aereo-Grav-page-0001.jpg",
-        "https://i.ibb.co/kVKxpxT0/Post-Aereo-Grav-page-0002.jpg"
+        "https://res.cloudinary.com/xibhs76y/image/upload/v1793709352/PostAereoGrav_page-0001.jpg",
+        "https://res.cloudinary.com/xibhs76y/image/upload/v1793709352/PostAereoGrav_page-0002.jpg"
       ],
       role: "Visual & Event Launch Concept",
       software: ["Adobe Photoshop"],
@@ -360,8 +360,8 @@ export const portfolioData: PortfolioData = {
       detailCategory: "PROGETTO AI TECH",
       gridSize: "grande",
       mediaType: "image",
-      mediaUrl: "https://i.ibb.co/1tPdddrN/yeldops.jpg",
-      gallery: ["https://i.ibb.co/1tPdddrN/yeldops.jpg"],
+      mediaUrl: "https://res.cloudinary.com/xibhs76y/image/upload/v1793708096/yeldops.jpg",
+      gallery: ["https://res.cloudinary.com/xibhs76y/image/upload/v1793708096/yeldops.jpg"],
       liveUrl: "https://yieldops.lovable.app/",
       role: "AI Research & Prototyping",
       software: ["Gemini Pro", "NotebookLM", "ElevenLabs"],
@@ -376,11 +376,11 @@ export const portfolioData: PortfolioData = {
       detailCategory: "PROGETTO GRAFICO",
       gridSize: "stretto",
       mediaType: "image",
-      mediaUrl: "https://i.ibb.co/07mrGWL/Neymar-Caisa.png",
+      mediaUrl: "https://res.cloudinary.com/xibhs76y/image/upload/v1793707392/NeymarCaisa.png",
       gallery: [
-        "https://i.ibb.co/07mrGWL/Neymar-Caisa.png",
-        "https://i.ibb.co/jBjhxjc/kid2-0-ig-3.png",
-        "https://i.ibb.co/s9kSzZTq/luche.png"
+        "https://res.cloudinary.com/xibhs76y/image/upload/v1793707392/NeymarCaisa.png",
+        "https://res.cloudinary.com/xibhs76y/image/upload/v1793707394/kid2.0_ig_3.png",
+        "https://res.cloudinary.com/xibhs76y/image/upload/v1793707396/luche.png"
       ],
       role: "Personal Experimentation & Splicing",
       software: ["Adobe Photoshop"],

@@ -3,8 +3,8 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig} from 'vite';
 
-export default defineConfig(() => {
-  let base = './';
+export default defineConfig(({ command }) => {
+  let base = command === 'serve' ? '/' : './';
   if (process.env.BASE_PATH) {
     base = process.env.BASE_PATH.endsWith('/') ? process.env.BASE_PATH : `${process.env.BASE_PATH}/`;
   } else if (process.env.GITHUB_REPOSITORY) {
