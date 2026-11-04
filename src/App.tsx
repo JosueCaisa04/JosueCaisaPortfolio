@@ -1228,19 +1228,6 @@ export default function App() {
                 <span>Scarica CV</span>
               </div>
             </a>
-
-            <button 
-              type="button"
-              id="cta-media-manager-nav"
-              onClick={() => setIsMediaManagerOpen(true)}
-              className="relative px-3.5 py-2 overflow-hidden group rounded-none border border-[#0F0F10]/20 transition-all duration-300 hover:border-[#FF3B3F] bg-black text-white hover:bg-[#FF3B3F] cursor-pointer shadow-[2px_2px_0px_#0F0F10]"
-              title="Gestisci o carica immagini dei lavori"
-            >
-              <div className="relative flex items-center gap-1.5 text-xs uppercase tracking-widest transition-colors duration-300 font-bold font-mono">
-                <FolderUp className="w-3.5 h-3.5 text-[#FF3B3F] group-hover:text-white" />
-                <span>Carica Lavori</span>
-              </div>
-            </button>
           </div>
 
           {/* Mobile Hamburguer trigger */}
@@ -1324,18 +1311,6 @@ export default function App() {
                   <Linkedin className="w-5 h-5 text-white" />
                   <span>LINKEDIN - CONNETTITI 🔗</span>
                 </a>
-
-                <button 
-                  type="button"
-                  onClick={() => {
-                    setIsOpen(false);
-                    setIsMediaManagerOpen(true);
-                  }}
-                  className="w-full text-center py-4 rounded-none bg-black hover:bg-[#FF3B3F] text-white font-bold tracking-widest text-sm uppercase flex items-center justify-center gap-2 transition-all duration-300 shadow-[4px_4px_0px_#0F0F10] cursor-pointer"
-                >
-                  <FolderUp className="w-5 h-5 text-[#FF3B3F]" />
-                  <span>CARICA O SOSTITUISCI LAVORI 📷</span>
-                </button>
 
                 <a 
                   href="/api/download-cv"

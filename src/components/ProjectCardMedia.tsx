@@ -75,17 +75,6 @@ export const ProjectCardMedia: React.FC<ProjectCardMediaProps> = ({
         </span>
       </div>
 
-      {/* Top Right Quick Upload / Customize Button on Card Hover */}
-      <button
-        type="button"
-        onClick={(e) => onOpenUpload(project.id, e)}
-        className="absolute top-3 right-3 z-30 px-2 py-1 bg-black/85 hover:bg-[#FF3B3F] text-white/80 hover:text-white border border-white/20 hover:border-[#FF3B3F] text-[9px] font-mono font-bold uppercase transition-all duration-200 opacity-0 group-hover:opacity-100 flex items-center gap-1 shadow-md cursor-pointer"
-        title="Sostituisci o visualizza file originale"
-      >
-        <Upload className="w-2.5 h-2.5" />
-        <span className="hidden sm:inline">Sostituisci</span>
-      </button>
-
       {/* Fallback Graphic UI if Image Fails to Load */}
       {hasError ? (
         <div className="absolute inset-0 bg-[#0F0F14] p-4 flex flex-col justify-between border-2 border-[#FF3B3F]/30 z-10">
