@@ -1545,7 +1545,7 @@ export default function App() {
               {/* Location Tag */}
               <div className="flex flex-wrap items-center gap-3 mb-8">
                 <span className="px-3 py-1 text-[10px] font-mono font-bold tracking-widest uppercase bg-[#0F0F10]/5 border border-[#0F0F10]/10 text-[#0F0F10] rounded-none">
-                  21 ANNI
+                  22 ANNI
                 </span>
                 <span className="px-3 py-1 text-[10px] font-mono font-bold tracking-widest uppercase bg-[#FF3B3F]/10 border border-[#FF3B3F]/20 text-[#FF3B3F] rounded-none">
                   RHO (MILANO)
