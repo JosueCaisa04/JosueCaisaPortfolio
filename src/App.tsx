@@ -825,6 +825,13 @@ export default function App() {
 
   useEffect(() => {
     if (selectedProject) {
+      if (typeof (window as any).gtag === "function") {
+        (window as any).gtag("event", "select_content", {
+          content_type: "project",
+          item_id: selectedProject.id,
+          item_name: selectedProject.title,
+        });
+      }
       setModalVideoMuted(false);
       setActiveSlideIndex(0);
       setIsLightboxOpen(false);
@@ -972,6 +979,12 @@ export default function App() {
 
   const handleDownloadCV = (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
+    if (typeof (window as any).gtag === "function") {
+      (window as any).gtag("event", "file_download", {
+        file_name: "Curriculum_Jeremi_Josue_Caisachana.pdf",
+        file_extension: "pdf",
+      });
+    }
     const base = import.meta.env.BASE_URL || "/";
     const normalizedBase = base.endsWith("/") ? base : base + "/";
     const staticCvPath = `${normalizedBase}Curriculum_Jeremi_Josue_Caisachana.pdf`;
